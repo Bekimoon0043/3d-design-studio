@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Thin, dark scrollbars for panels */
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #3a3d45;
+  border-radius: 4px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-section-title {
+  @apply text-[11px] uppercase tracking-wide text-gray-400 font-semibold px-3 pt-3 pb-1;
+}
+
+.input-dark {
+  @apply bg-[#101114] border border-border rounded px-2 py-1 text-sm text-gray-200 w-full focus:outline-none focus:border-accent;
+}
+
+.btn-primary {
+  @apply bg-accent hover:bg-accentHover text-white text-sm font-medium px-3 py-1.5 rounded transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-panelLight hover:bg-[#2c2f38] border border-border text-sm text-gray-200 px-3 py-1.5 rounded transition-colors;
+}
+
+.icon-btn {
+  @apply flex items-center justify-center w-9 h-9 rounded hover:bg-panelLight text-gray-300 hover:text-white transition-colors cursor-pointer;
+}
+
+.icon-btn.active {
+  @apply bg-accent text-white;
+}
