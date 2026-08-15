@@ -1,1 +1,42 @@
-# Placeholder - full content will be updated from zip
+services:
+  # ------------------------------------------------------------------
+  # Frontend — static site (Vite build output)
+  # ------------------------------------------------------------------
+  - type: web
+    name: 3d-design-studio-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # ------------------------------------------------------------------
+  # Backend — Node/Express API
+  # ------------------------------------------------------------------
+  - type: web
+    name: 3d-design-studio-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4000"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
