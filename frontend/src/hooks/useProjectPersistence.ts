@@ -64,14 +64,15 @@ export function useProjectPersistence(_user?: unknown): UseProjectPersistence {
       if (projectId) {
         const idx = projects.findIndex((p) => p.id === projectId);
         if (idx >= 0) {
+          const existing = projects[idx]!;
           projects[idx] = {
-            ...projects[idx],
+            id: existing.id,
             name: projectName,
             scene_json: sceneJson,
+            created_at: existing.created_at,
             updated_at: now,
           };
         } else {
-          // ID existed in store but not in cache — create fresh
           projects.push({
             id: projectId,
             name: projectName,
@@ -106,7 +107,6 @@ export function useProjectPersistence(_user?: unknown): UseProjectPersistence {
     setLoading(true);
     try {
       const projects = readAll();
-      // Sort newest first
       projects.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
       return projects.map((p) => ({
         id: p.id,

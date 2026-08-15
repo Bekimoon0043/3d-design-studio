@@ -19,29 +19,36 @@ function VectorRow({ label, value, step = 0.1, isAngle = false, onChange }: Vect
   const handleAxisChange = (axisIndex: number, raw: string) => {
     const parsed = parseFloat(raw);
     if (Number.isNaN(parsed)) return;
-    const next = [...display] as Vector3Tuple;
+    const next: Vector3Tuple = [display[0] ?? 0, display[1] ?? 0, display[2] ?? 0];
     next[axisIndex] = parsed;
-    onChange(isAngle ? (next.map((v) => v * DEG_TO_RAD) as Vector3Tuple) : next);
+    onChange(
+      isAngle
+        ? ([next[0] * DEG_TO_RAD, next[1] * DEG_TO_RAD, next[2] * DEG_TO_RAD] as Vector3Tuple)
+        : next
+    );
   };
 
   return (
     <div className="px-3 mb-2">
       <label className="text-xs text-gray-400 mb-1 block">{label}</label>
       <div className="grid grid-cols-3 gap-1.5">
-        {AXES.map((axisLabel, i) => (
-          <div key={axisLabel} className="relative">
-            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-500">
-              {axisLabel}
-            </span>
-            <input
-              type="number"
-              step={step}
-              value={Number(display[i].toFixed(3))}
-              onChange={(e) => handleAxisChange(i, e.target.value)}
-              className="input-dark pl-4 text-right"
-            />
-          </div>
-        ))}
+        {AXES.map((axisLabel, i) => {
+          const axisValue = display[i] ?? 0;
+          return (
+            <div key={axisLabel} className="relative">
+              <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-500">
+                {axisLabel}
+              </span>
+              <input
+                type="number"
+                step={step}
+                value={Number(axisValue.toFixed(3))}
+                onChange={(e) => handleAxisChange(i, e.target.value)}
+                className="input-dark pl-4 text-right"
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
