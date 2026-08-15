@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Grid, OrbitControls, TransformControls, Environment } from '@react-three/drei';
+import { Grid, OrbitControls, TransformControls, Environment, PerspectiveCamera, OrthographicCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSceneStore } from '../../store/useSceneStore';
@@ -27,6 +27,46 @@ function evaluateKeyframes(object: SceneObject, time: number) {
       return { position: interpolate(left.position, right.position, amount), rotation: interpolate(left.rotation, right.rotation, amount), scale: interpolate(left.scale, right.scale, amount) };
     }
   }
+  return null;
+}
+
+function CameraRig() {
+  const cameraSettings = useSceneStore((state) => state.sceneSettings.camera);
+  const cameraType = cameraSettings.type;
+  const position = cameraSettings.position;
+  const target = cameraSettings.target;
+  const { camera } = useThree();
+  useEffect(() => {
+    camera.position.fromArray(position);
+    camera.lookAt(new THREE.Vector3(...target));
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.fov = cameraSettings.fov;
+      camera.near = cameraSettings.near;
+      camera.far = cameraSettings.far;
+    } else if (camera instanceof THREE.OrthographicCamera) {
+      const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+      camera.left = (-cameraSettings.orthoSize * aspect) / 2;
+      camera.right = (cameraSettings.orthoSize * aspect) / 2;
+      camera.top = cameraSettings.orthoSize / 2;
+      camera.bottom = -cameraSettings.orthoSize / 2;
+      camera.near = cameraSettings.near;
+      camera.far = cameraSettings.far;
+    }
+    camera.updateProjectionMatrix();
+  }, [camera, cameraSettings, position, target]);
+  return cameraType === 'orthographic' ? <OrthographicCamera makeDefault position={position} zoom={2} /> : <PerspectiveCamera makeDefault position={position} fov={cameraSettings.fov} near={cameraSettings.near} far={cameraSettings.far} />;
+}
+
+function RuntimeRenderer() {
+  const render = useSceneStore((state) => state.sceneSettings.render);
+  const { gl } = useThree();
+  useEffect(() => {
+    gl.toneMapping = render.mode === 'realistic' ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
+    gl.toneMappingExposure = render.exposure;
+    gl.outputColorSpace = THREE.SRGBColorSpace;
+    gl.shadowMap.enabled = render.shadows;
+    gl.shadowMap.type = render.mode === 'realistic' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+  }, [gl, render]);
   return null;
 }
 
@@ -65,9 +105,14 @@ function RuntimeSimulation() {
 }
 
 function RenderCapture() {
+  const render = useSceneStore((state) => state.sceneSettings.render);
   const { gl, scene, camera } = useThree();
   useEffect(() => {
     const handleCapture = () => {
+      const originalSize = gl.getSize(new THREE.Vector2());
+      const originalPixelRatio = gl.getPixelRatio();
+      gl.setPixelRatio(render.pixelRatio);
+      gl.setSize(render.width, render.height, false);
       gl.render(scene, camera);
       gl.domElement.toBlob((blob) => {
         if (!blob) return;
@@ -77,11 +122,13 @@ function RenderCapture() {
         link.download = '3d-studio-render.png';
         link.click();
         URL.revokeObjectURL(url);
+        gl.setPixelRatio(originalPixelRatio);
+        gl.setSize(originalSize.x, originalSize.y, false);
       }, 'image/png');
     };
     window.addEventListener('render-scene', handleCapture);
     return () => window.removeEventListener('render-scene', handleCapture);
-  }, [gl, scene, camera]);
+  }, [gl, scene, camera, render]);
   return null;
 }
 
@@ -116,12 +163,14 @@ export default function Scene() {
   const attachSelectedRef = useCallback((node: THREE.Mesh | null) => { selectedMeshRef.current = node; bumpVersion((value) => value + 1); }, []);
 
   return (
-    <Canvas shadows camera={{ position: [6, 5, 8], fov: 50 }} onPointerMissed={() => selectObject(null)} dpr={[1, 1.5]} gl={{ preserveDrawingBuffer: true }}>
+    <Canvas shadows camera={{ position: settings.camera.position, fov: settings.camera.fov }} onPointerMissed={() => selectObject(null)} dpr={[1, 1.5]} gl={{ preserveDrawingBuffer: true, antialias: true }}>
+      <CameraRig />
+      <RuntimeRenderer />
       <color attach="background" args={[settings.backgroundColor]} />
       <ambientLight intensity={settings.ambientIntensity} />
       <directionalLight position={settings.keyLightPosition} color={settings.keyLightColor} intensity={settings.keyLightIntensity} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} />
       <directionalLight position={[-6, 4, -4]} intensity={settings.fillLightIntensity} />
-      <Suspense fallback={null}><Environment preset="city" /></Suspense>
+      <Suspense fallback={null}><Environment preset="city" environmentIntensity={settings.render.environmentIntensity} /></Suspense>
       <Grid args={[40, 40]} cellSize={1} cellThickness={0.5} cellColor="#3a3d45" sectionSize={5} sectionThickness={1} sectionColor="#565a66" fadeDistance={35} fadeStrength={1} infiniteGrid />
       <AxesHelper />
       <RuntimeSimulation />

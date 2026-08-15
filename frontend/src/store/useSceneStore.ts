@@ -83,7 +83,14 @@ function createDefaultObject(type: PrimitiveType): SceneObject {
 function normalizeScene(scene: Partial<SceneJSON>): SceneJSON {
   return {
     version: 2,
-    settings: { ...DEFAULT_SCENE_SETTINGS, ...(scene.settings ?? {}) },
+    settings: {
+      ...DEFAULT_SCENE_SETTINGS,
+      ...(scene.settings ?? {}),
+      gravity: scene.settings?.gravity ?? DEFAULT_SCENE_SETTINGS.gravity,
+      keyLightPosition: scene.settings?.keyLightPosition ?? DEFAULT_SCENE_SETTINGS.keyLightPosition,
+      camera: { ...DEFAULT_SCENE_SETTINGS.camera, ...(scene.settings?.camera ?? {}) },
+      render: { ...DEFAULT_SCENE_SETTINGS.render, ...(scene.settings?.render ?? {}) },
+    },
     objects: (scene.objects ?? []).map((object) => ({
       ...object,
       material: { ...DEFAULT_MATERIAL, ...(object.material ?? {}) },
@@ -97,7 +104,13 @@ function snapshotOf(state: Pick<SceneState, 'projectId' | 'projectName' | 'objec
   return {
     projectId: state.projectId,
     projectName: state.projectName,
-    sceneSettings: { ...state.sceneSettings, gravity: [...state.sceneSettings.gravity] as Vector3Tuple, keyLightPosition: [...state.sceneSettings.keyLightPosition] as Vector3Tuple },
+    sceneSettings: {
+      ...state.sceneSettings,
+      gravity: [...state.sceneSettings.gravity] as Vector3Tuple,
+      keyLightPosition: [...state.sceneSettings.keyLightPosition] as Vector3Tuple,
+      camera: { ...state.sceneSettings.camera, position: [...state.sceneSettings.camera.position] as Vector3Tuple, target: [...state.sceneSettings.camera.target] as Vector3Tuple },
+      render: { ...state.sceneSettings.render },
+    },
     objects: state.objects.map((object) => ({
       ...object,
       position: [...object.position] as Vector3Tuple,
@@ -149,7 +162,14 @@ export const useSceneStore = create<SceneState>((set, get) => ({
 
   setObjectTransform: (id, field, value) => set((state) => state.objects.some((object) => object.id === id) ? withHistory(state, { objects: state.objects.map((object) => object.id === id ? { ...object, [field]: value } : object) }) : state),
 
-  updateSceneSettings: (patch) => set((state) => withHistory(state, { sceneSettings: { ...state.sceneSettings, ...patch } })),
+  updateSceneSettings: (patch) => set((state) => withHistory(state, {
+    sceneSettings: {
+      ...state.sceneSettings,
+      ...patch,
+      camera: patch.camera ? { ...state.sceneSettings.camera, ...patch.camera } : state.sceneSettings.camera,
+      render: patch.render ? { ...state.sceneSettings.render, ...patch.render } : state.sceneSettings.render,
+    },
+  })),
 
   addKeyframe: (id, time) => set((state) => {
     const object = state.objects.find((item) => item.id === id);
@@ -175,7 +195,7 @@ export const useSceneStore = create<SceneState>((set, get) => ({
     set({ projectId, projectName: name, objects: normalized.objects, sceneSettings: normalized.settings, selectedId: null, isDirty: false, past: [], future: [] });
   },
 
-  resetScene: () => set({ projectId: null, projectName: 'Untitled Project', objects: [], sceneSettings: { ...DEFAULT_SCENE_SETTINGS }, selectedId: null, isDirty: false, past: [], future: [] }),
+  resetScene: () => set({ projectId: null, projectName: 'Untitled Project', objects: [], sceneSettings: { ...DEFAULT_SCENE_SETTINGS, camera: { ...DEFAULT_SCENE_SETTINGS.camera, position: [...DEFAULT_SCENE_SETTINGS.camera.position] as Vector3Tuple, target: [...DEFAULT_SCENE_SETTINGS.camera.target] as Vector3Tuple }, render: { ...DEFAULT_SCENE_SETTINGS.render } }, selectedId: null, isDirty: false, past: [], future: [] }),
   markSaved: () => set({ isDirty: false }),
   getSceneJSON: () => ({ version: 2, objects: get().objects, settings: get().sceneSettings }),
 

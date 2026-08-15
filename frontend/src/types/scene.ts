@@ -37,6 +37,29 @@ export interface SceneObject {
 export type TransformMode = 'translate' | 'rotate' | 'scale';
 export type TransformSpace = 'world' | 'local';
 
+export type CameraType = 'perspective' | 'orthographic';
+export type RenderMode = 'studio' | 'realistic';
+
+export interface CameraSettings {
+  type: CameraType;
+  position: Vector3Tuple;
+  target: Vector3Tuple;
+  fov: number;
+  near: number;
+  far: number;
+  orthoSize: number;
+}
+
+export interface RenderSettings {
+  mode: RenderMode;
+  width: number;
+  height: number;
+  pixelRatio: number;
+  exposure: number;
+  environmentIntensity: number;
+  shadows: boolean;
+}
+
 export interface SceneSettings {
   gravity: Vector3Tuple;
   backgroundColor: string;
@@ -47,6 +70,8 @@ export interface SceneSettings {
   fillLightIntensity: number;
   animationDuration: number;
   animationFps: number;
+  camera: CameraSettings;
+  render: RenderSettings;
 }
 
 export interface SceneJSON {
@@ -88,4 +113,22 @@ export const DEFAULT_SCENE_SETTINGS: SceneSettings = {
   fillLightIntensity: 0.3,
   animationDuration: 10,
   animationFps: 30,
+  camera: {
+    type: 'perspective',
+    position: [6, 5, 8],
+    target: [0, 0.5, 0],
+    fov: 50,
+    near: 0.1,
+    far: 1000,
+    orthoSize: 10,
+  },
+  render: {
+    mode: 'realistic',
+    width: 1280,
+    height: 720,
+    pixelRatio: 1,
+    exposure: 1,
+    environmentIntensity: 0.8,
+    shadows: true,
+  },
 };

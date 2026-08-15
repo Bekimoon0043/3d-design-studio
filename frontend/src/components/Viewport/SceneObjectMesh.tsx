@@ -46,10 +46,12 @@ const SceneObjectMesh = forwardRef<THREE.Mesh, Props>(({ object, isSelected, onS
       onClick={handleClick}
     >
       {renderGeometry()}
-      <meshStandardMaterial
+      <meshPhysicalMaterial
         color={object.material.color}
         metalness={object.material.metalness}
         roughness={object.material.roughness}
+        clearcoat={0.18}
+        clearcoatRoughness={0.24}
         emissive={isSelected ? new THREE.Color('#4f7cff') : new THREE.Color('#000000')}
         emissiveIntensity={isSelected ? 0.25 : 0}
       />

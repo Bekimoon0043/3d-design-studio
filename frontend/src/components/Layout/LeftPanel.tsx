@@ -4,6 +4,7 @@ import SceneHierarchy from '../Panels/SceneHierarchy';
 import PhysicsPanel from '../Panels/PhysicsPanel';
 import AnimationPanel from '../Panels/AnimationPanel';
 import LightingPanel from '../Panels/LightingPanel';
+import CameraPanel from '../Panels/CameraPanel';
 
 /** Left sidebar: object creation, transforms, simulation, animation, lighting, and hierarchy. */
 export default function LeftPanel() {
@@ -18,6 +19,8 @@ export default function LeftPanel() {
       <AnimationPanel />
       <div className="h-px bg-border my-3 mx-3" />
       <LightingPanel />
+      <div className="h-px bg-border my-3 mx-3" />
+      <CameraPanel />
       <div className="h-px bg-border my-3 mx-3" />
       <SceneHierarchy />
     </aside>
