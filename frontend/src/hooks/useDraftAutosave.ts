@@ -29,6 +29,7 @@ export function useDraftAutosave() {
   const projectId = useSceneStore((state) => state.projectId);
   const projectName = useSceneStore((state) => state.projectName);
   const objects = useSceneStore((state) => state.objects);
+  const sceneSettings = useSceneStore((state) => state.sceneSettings);
   const isDirty = useSceneStore((state) => state.isDirty);
   const loadScene = useSceneStore((state) => state.loadScene);
   const restoredRef = useRef(false);
@@ -47,7 +48,7 @@ export function useDraftAutosave() {
       const draft: CachedDraft = {
         projectId,
         projectName,
-        scene: { version: 1, objects },
+        scene: { version: 2, objects, settings: sceneSettings },
         updatedAt: new Date().toISOString(),
       };
       try {
@@ -58,5 +59,5 @@ export function useDraftAutosave() {
     }, AUTOSAVE_DELAY);
 
     return () => window.clearTimeout(timeout);
-  }, [projectId, projectName, objects, isDirty]);
+  }, [projectId, projectName, objects, sceneSettings, isDirty]);
 }

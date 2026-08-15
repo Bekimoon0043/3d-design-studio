@@ -67,11 +67,11 @@ export default function TopBar({ user }: Props) {
         <button className="btn-secondary" onClick={resetScene}>
           New
         </button>
-        <button
-          className="btn-secondary"
-          onClick={() => downloadSceneAsJSON(getSceneJSON(), projectName)}
-        >
-          Export
+        <button className="btn-secondary" onClick={() => downloadSceneAsJSON(getSceneJSON(), projectName)}>
+          Export JSON
+        </button>
+        <button className="btn-secondary" onClick={() => window.dispatchEvent(new Event('render-scene'))}>
+          Render PNG
         </button>
         <button className="btn-primary disabled:opacity-50" disabled={saving} onClick={saveProject}>
           {saving ? 'Saving…' : 'Save'}
