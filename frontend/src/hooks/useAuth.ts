@@ -1,40 +1,25 @@
-import { useEffect, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { useState } from 'react';
+
+/** Minimal local-only auth stub for testing (no Supabase). */
+export interface LocalUser {
+  id: string;
+  email: string;
+}
 
 interface AuthState {
-  user: User | null;
+  user: LocalUser | null;
   loading: boolean;
 }
 
 /**
- * Tracks the current Supabase auth session. If Supabase isn't configured
- * (no env vars set) this resolves immediately with `user: null` so the rest
- * of the app can still render in local/demo mode.
+ * Local testing mode: always signed in as a guest.
+ * Persistence uses browser localStorage — no cloud account needed.
  */
 export function useAuth(): AuthState {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(isSupabaseConfigured);
+  const [user] = useState<LocalUser | null>({
+    id: 'local-user',
+    email: 'guest@local',
+  });
 
-  useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  return { user, loading };
+  return { user, loading: false };
 }
