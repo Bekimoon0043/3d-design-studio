@@ -1,96 +1,44 @@
 # 3D Design Studio
 
-A browser-based 3D design platform: create, transform, and style primitive objects in an
-interactive WebGL viewport, save projects to the cloud, and export scenes — all from a
-professional dark-themed editor UI.
+Browser-based 3D editor: create primitives, transform them, edit materials, save/load from **browser localStorage**, and export JSON.
 
-![tech](https://img.shields.io/badge/frontend-React%20%2B%20TypeScript%20%2B%20Three.js-4f7cff)
-![tech](https://img.shields.io/badge/backend-Node.js%20%2B%20Express-4f7cff)
-![tech](https://img.shields.io/badge/database-Supabase-4f7cff)
-
-## Features
-
-- **Interactive 3D viewport** — orbit/zoom/pan camera, grid + axis helpers, click-to-select
-- **Object creation** — Cube, Sphere, Cylinder, Plane
-- **Object editing** — move, rotate, scale (draggable gizmo + numeric fields), duplicate, delete
-- **Properties panel** — name, position X/Y/Z, rotation X/Y/Z, scale X/Y/Z
-- **Material editor** — color picker, metalness, roughness
-- **Projects** — sign up / sign in, save, open, and manage designs, backed by Supabase
-- **Export** — download the current scene as JSON
-- **Keyboard shortcuts** — `W`/`E`/`R` to switch tools, `Delete` to remove, `Ctrl/Cmd+D` to duplicate
-
-## Tech stack
-
-| Layer          | Technology                                              |
-|----------------|----------------------------------------------------------|
-| Frontend       | React, TypeScript, Vite, Three.js, React Three Fiber, Drei, Tailwind CSS |
-| Backend        | Node.js, Express                                         |
-| Database       | Supabase (Postgres)                                       |
-| Authentication | Supabase Auth                                              |
-| Storage        | Supabase Storage                                            |
-
-## Project structure
-
-```
-3d-design-platform/
-├── frontend/            React + Vite + Three.js editor (the app users interact with)
-│   ├── src/
-│   │   ├── components/  Layout, Viewport, Panels, Auth
-│   │   ├── store/       Zustand scene store
-│   │   ├── hooks/       auth, persistence, keyboard shortcuts
-│   │   ├── types/       shared TypeScript types
-│   │   └── utils/       id generation, JSON export
-│   └── .env.example
-├── backend/              Express API (health check, scene validation, extension point)
-│   ├── src/
-│   │   ├── routes/
-│   │   └── middleware/
-│   └── .env.example
-├── database/             SQL for Supabase: schema, RLS policies, storage bucket
-│   ├── schema.sql
-│   ├── policies.sql
-│   └── storage_setup.sql
-├── docs/                 Setup, Supabase, deployment, and architecture guides
-│   ├── SETUP.md
-│   ├── SUPABASE_SETUP.md
-│   ├── RENDER_DEPLOYMENT.md
-│   └── ARCHITECTURE.md
-├── render.yaml            Render Blueprint (deploy both services in one step)
-└── README.md              You are here
-```
+**Local testing mode** — no Supabase or backend required. Projects are cached in your browser.
 
 ## Quick start
 
 ```bash
-# 1. Set up Supabase (see docs/SUPABASE_SETUP.md), then:
-cp frontend/.env.example frontend/.env   # fill in your Supabase URL + anon key
-cp backend/.env.example backend/.env
-
-# 2. Install and run the frontend
 cd frontend
 npm install
 npm run dev
-# → open http://localhost:5173
-
-# 3. (Optional) install and run the backend API
-cd ../backend
-npm install
-npm run dev
-# → http://localhost:4000/api/health
+# → http://localhost:5173
 ```
 
-Full walkthrough, including verification steps for each feature: **[docs/SETUP.md](docs/SETUP.md)**.
+## Features
 
-## Deploying
+- Interactive WebGL viewport (orbit / zoom / pan)
+- Primitives: Cube, Sphere, Cylinder, Plane
+- Move / Rotate / Scale (W / E / R) + gizmo
+- Properties + material editor (color, metalness, roughness)
+- **Save / Open / Delete** → stored in `localStorage`
+- Export scene as JSON
+- Keyboard shortcuts: W/E/R, Delete, Ctrl/Cmd+D
 
-This project deploys to [Render](https://render.com) as two services — a static site for the
-frontend and a web service for the backend — using the included `render.yaml` Blueprint, or
-manually. Full instructions: **[docs/RENDER_DEPLOYMENT.md](docs/RENDER_DEPLOYMENT.md)**.
+## Project layout
 
-Supabase setup (database schema, auth, storage): **[docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)**.
+```
+frontend/     React + Vite + R3F editor (run this)
+backend/      Optional Express API (not needed for local testing)
+database/     Supabase SQL (optional, for later cloud mode)
+docs/         Architecture & setup notes
+```
 
-Architecture notes and future improvement ideas: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+## How saves work
 
-## License
+Projects are written to `localStorage` under the key `3d-design-studio:projects`.
+Clearing site data for localhost will wipe them. Export JSON if you need a backup.
 
-This starter project is provided as-is for you to use, modify, and deploy freely.
+## Optional: cloud later
+
+The original Supabase schema lives under `database/`. To re-enable cloud, restore
+`@supabase/supabase-js` in `frontend/package.json` and the cloud versions of
+`useAuth` / `useProjectPersistence`.
